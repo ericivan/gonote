@@ -9,8 +9,8 @@ import (
 )
 
 var GithubConfig = oauth2.Config{
-	ClientID:     "",
-	ClientSecret: "",
+	ClientID:     "dd5636af1d264b802c4e",
+	ClientSecret: "a93a344b708e84842e5306f15dff2703d8ef6155",
 	Scopes:       []string{},
 	Endpoint:     github.Endpoint,
 }

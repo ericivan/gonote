@@ -10,6 +10,7 @@ import (
 	"os"
 	"github.com/markbates/goth/providers/openidConnect"
 	"sort"
+	"fmt"
 )
 
 var sessionManager *sessions.Sessions
@@ -153,11 +154,15 @@ func Logout(ctx iris.Context) error {
 }
 
 func main() {
+
+	os.Setenv("GITHUB_KEY", "")
+	os.Setenv("GITHUB_SECRET", "")
+
 	goth.UseProviders(
-		github.New(os.Getenv("GITHUB_KEY"), os.Getenv("GITHUB_SECRET"), "http://localhost:3000/auth/github/callback"),
+		github.New(os.Getenv("GITHUB_KEY"), os.Getenv("GITHUB_SECRET"), "http://127.0.0.1:2333/auth/github/callback"),
 	)
 
-	openidConnected, _ := openidConnect.New(os.Getenv("OPENID_CONNECT_KEY"), os.Getenv("OPENID_CONNECT_SECRET"), "http://localhost:3000/auth/openid-connect/callback", os.Getenv("OPENID_CONNECT_DISCOVERY_URL"))
+	openidConnected, _ := openidConnect.New(os.Getenv("OPENID_CONNECT_KEY"), os.Getenv("OPENID_CONNECT_SECRET"), "http://localhost:2333/auth/openid-connect/callback", os.Getenv("OPENID_CONNECT_DISCOVERY_URL"))
 
 	if openidConnected != nil {
 		goth.UseProviders(openidConnected)
@@ -175,6 +180,9 @@ func main() {
 	sort.Strings(keys)
 
 	providerIndex := &ProviderIndex{Providers: keys, ProvidersMap: m}
+
+	fmt.Printf("%v", providerIndex)
+
 
 	app := iris.New()
 
@@ -202,6 +210,11 @@ func main() {
 		ctx.Redirect("/", iris.StatusTemporaryRedirect)
 	})
 
+	app.Get("/auth/{provider}",func(ctx iris.Context) {
+		BeginAuthHandler(ctx)
+
+	})
+
 	app.Get("/", func(ctx iris.Context) {
 		ctx.ViewData("", providerIndex)
 
@@ -210,10 +223,12 @@ func main() {
 		}
 	})
 
-	app.Run(iris.Addr("localhost:3000"))
+	app.Run(iris.Addr(":2333"))
 }
 
 type ProviderIndex struct {
 	Providers    []string
 	ProvidersMap map[string]string
 }
+
+
